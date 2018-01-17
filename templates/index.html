@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<head>
+	<title>ksonnet GitHub dashboard</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.bundle.js"></script>
+	<style>
+		canvas {
+			-moz-user-select: none;
+			-webkit-user-select: none;
+			-ms-user-select: none;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="width:1000px">
+		<canvas id="bugs"></canvas>
+	<div>
+	<script>
+		function counts() {
+			var data = [];
+			var labels = [];
+
+			var counts = {{ .Bugs }};
+			var times = Object.keys(counts);
+			times.sort();
+
+			for (var i = 0; i < times.length; i++) {
+				var time = moment(times[i]);
+				data.push({
+					t: moment(time).valueOf(),
+					y: counts[times[i]],
+				});
+				labels.push(time);
+			}
+
+			return [data, labels];
+		}
+
+		[bugCounts, countLabels] = counts();
+
+		var ctx = document.getElementById("bugs").getContext("2d");
+		ctx.canvas.width = 1000;
+		ctx.canvas.height = 300;
+		var cfg = {
+			type: 'bar',
+			data: {
+				labels: countLabels,
+				datasets: [{
+					label: "Open bugs",
+					data: bugCounts,
+					type: 'line',
+					pointRadius: 0,
+					fill: false,
+					lineTension: 0,
+					borderWidth: 2
+				}]
+			},
+			options: {
+				scales: {
+					xAxes: [{
+						type: 'time',
+						distribution: 'series',
+						ticks: {
+							source: 'labels'
+						}
+					}],
+					yAxes: [{
+						scaleLabel: {
+							display: true,
+							labelString: 'Number of open issues'
+						}
+					}]
+				}
+			}
+		};
+		var chart = new Chart(ctx, cfg);
+	</script>
+</body>
